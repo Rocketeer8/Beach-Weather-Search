@@ -80,15 +80,15 @@
         appId: "1:806850185452:web:beaa482307da88b1067dc9",
         measurementId: "G-1V9LNBJ952"
     };
+    // http://13.59.123.26:3000/maps
+    // "https://maps.googleapis.com/maps/api/js?key=AIzaSyD-k2MhPwyV6DlosdN55rIqai3IOgRnspI&libraries=places&callback=Function.prototype"
     // Initialize Firebase
     // Set the name of the JavaScript function that you would like to trigger once the external API library has finished loading.
     // that's why you need "callback=Function.prototype" in the link (Function.prototype mean you don't need a callback)
     firebase.initializeApp(firebaseConfig);
     firebase.analytics();
     </script>
-    <script
-         src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD-k2MhPwyV6DlosdN55rIqai3IOgRnspI&libraries=places&callback=Function.prototype"  async defer >
-    </script>
+    <script src="http://13.59.123.26:3000/maps" async defer > </script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
