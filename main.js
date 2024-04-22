@@ -23,8 +23,7 @@ let mapPlacementLng =-71.0598;
 let address;
 let dataPretty;
 
-//MAP VIEWING
-
+//MAP VIEWING (ongoing)
  function initMap(){
   //map options
   
@@ -40,10 +39,7 @@ let dataPretty;
   //   position:{lat:42.4668,lng:-70.9695},
   //   map:map
   // });
-  
-  
   initAutocomplete();
-  
 }
 
 // AUTOCOMPLETE FUNCTIONALITY
@@ -62,7 +58,7 @@ function initAutocomplete(){
   google.maps.event.addListener(autocomplete, 'place_changed', onPlaceClick)
 
   // I think this one fire after autocomplete object finish loading
-  autocomplete.addListener('place_changed', console.log("YOOOOOOOOOOOOOOOOOOOO"));  
+  autocomplete.addListener('place_changed', console.log("Autocomplete listener activated (testing)"));  
 }
 // this line adds a listener to the window object, which as soon as the load event is triggered
 //(i.e. "the page has finished loading") executes the function initialize. 
@@ -88,27 +84,28 @@ function onPlaceClick(){
 // converting address to latitude and longitude
 function geocode(location) {
   // let location = ' 22 Main st Bostan MA';
-  axios.get('https://maps.googleapis.com/maps/api/geocode/json',{
-    params:{
-      address:location,
-      key: 'AIzaSyD-k2MhPwyV6DlosdN55rIqai3IOgRnspI'
+  
+  fetch(`https://beach-web-proxy.xyz:8443/geocode?location=${location}`)
+  .then(response => {
+    if (!response.ok) {
+      throw new Error('Failed to fetch data from server');
     }
+    return response.json();
   })
-  .then(function(result){
+  .then(result => {
+    // Accessing the JSON content directly from the response
     console.log(result);
-    mapPlacementLat = (result.data.results[0].geometry.location['lat']);
-    mapPlacementLng = (result.data.results[0].geometry.location['lng']);
-    console.log("Latitude: " + mapPlacementLat + " Longi: " + mapPlacementLng)
-
+    const mapPlacementLat = result.results[0].geometry.location.lat;
+    const mapPlacementLng = result.results[0].geometry.location.lng;
+    console.log("Latitude: " + mapPlacementLat + " Longitude: " + mapPlacementLng);
     mapSetup(mapPlacementLat, mapPlacementLng);
     weatherJSONCoordinates(mapPlacementLat, mapPlacementLng);
     airPollutionBasedOnCoordinates(mapPlacementLat, mapPlacementLng);
-    // not subscribed to solarRadiation api paid plan so doesn't work
-    //solarRadiationCurrentJSONCoordinates(mapPlacementLat, mapPlacementLng);
   })
-  .catch(function(error){
-    console.log(error);
-  })
+  .catch(error => {
+    console.error('Error:', error);
+  });
+
 }
 
 function mapSetup (latitude, longitude) {
@@ -127,86 +124,35 @@ function mapSetup (latitude, longitude) {
 }
 
 
-// WEATHER API
-
-const API_KEY = "ed8b789eecee129309891dfe30f9a4c6"
-
-// weather by city
-function weatherJSONLocation(city, stateCode = null, countryCode = null) {
-    var url;
-
-    if (stateCode == null) {
-        url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&APPID=${API_KEY}`;
-    } else if (countryCode == null) {
-        url = `https://api.openweathermap.org/data/2.5/weather?q=${city},${stateCode}&APPID=${API_KEY}`;
-    } else {
-        url = `https://api.openweathermap.org/data/2.5/weather?q=${city},${stateCode},${countryCode}&APPID=${API_KEY}`;
-    }
-
-    fetch(url)
-    .then(response => response.json())
-    .then(data => {
-                    console.log(data);
-                    const body = document.querySelector("body");
-                    const dataPretty = JSON.stringify(data, null, 2); 
-                    body.insertAdjacentHTML("beforeend", `<h1> ${dataPretty} <\h1>`);
-                  });
-}
-
-// weather by coordinates
 function weatherJSONCoordinates(lat, lon) {
-    var url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&APPID=${API_KEY}&units=imperial&exclude=hourly`;
-
-    fetch(url)
-    .then(response => response.json())
+  fetch(`https://beach-web-proxy.xyz:8443/weather?lat=${lat}&lon=${lon}`)
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Failed to fetch weather data from server');
+      }
+      return response.json();
+    })
     .then(data => {
-                    console.log(data);
-                    const weather = document.querySelector("#weather");
-                    const status = document.querySelector('#status')
-                    // const icon = document.querySelector(".img")
-                    //  console.log(icon)
-                    // let weather_icon = data['weather'][0]['icon']
-                    // console.log(weather_icon)
+      console.log(data);
+      const weather = document.querySelector("#weather");
+      const status = document.querySelector('#status');
 
-                    //Getting image of the weather of that day
-                    // let img = document.createElement("img")
-                    // icon.src = `https://openweathermap.org/img/wn/${weather_icon}@2x.png`
-          
-                    // console.log(img)
-                    // icon.appendChild(img);
-
-                    //defining what a good or a bad day is in terms of weather
-                    if(data['main']['temp'] >= 75 && data['main']['temp'] <= 95){
-                      status.innerHTML = "Perfect Temperature! "
-                    } else if(data['main']['temp'] < 75 ){
-                      status.innerHTML = "Temperature is Too Cold"
-                    } else if(data['main']['temp']  > 95 ){
-                      status.innerHTML = "Temperature is Too Warm"
-                    }
-                    console.log(data['main']['temp'])
-                    weather.innerHTML = data['main']['temp'] + "˚F"
-                    // status.innerHTML = data['main']['temp']
-                    dataPretty = JSON.stringify(data, null, 2);
-
-                    // weather.innerHTML = dataPretty.main.feels_like
-                    // console.log(dataPretty.main[0].feels_like)
-                    // body.insertAdjacentHTML("beforeend", `<h1> ${dataPretty} <\h1>`);
-                  });
+      // Define what a good or a bad day is in terms of weather
+      if (data.main.temp >= 75 && data.main.temp <= 95) {
+        status.innerHTML = "Perfect Temperature!";
+      } else if (data.main.temp < 75) {
+        status.innerHTML = "Temperature is Too Cold";
+      } else if (data.main.temp > 95) {
+        status.innerHTML = "Temperature is Too Warm";
+      }
+      
+      console.log(data.main.temp);
+      weather.innerHTML = data.main.temp + "˚F";
+    })
+    .catch(error => {
+      console.error('Error:', error);
+    });
 }
-// weather by zipcode
-function weatherJSONZipCode(zipCode, countryCode) {
-    var url = `https://api.openweathermap.org/data/2.5/weather?zip=${zipCode},${countryCode}&APPID=${API_KEY}`;
-
-    fetch(url)
-    .then(response => response.json())
-    .then(data => {
-                    console.log(data);
-                    const body = document.querySelector("body");
-                    dataPretty = JSON.stringify(data, null, 2); 
-                    body.insertAdjacentHTML("beforeend", `<h1> ${dataPretty} <\h1>`);
-                  });
-}
-
 
 const airQuality = (aqi) => {
     const quality = new Map([
@@ -218,11 +164,15 @@ const airQuality = (aqi) => {
     ]);
     return quality.get(aqi);
 }
-function airPollutionBasedOnCoordinates(lat, lon) {
-  var url = `https://api.openweathermap.org/data/2.5/air_pollution?lat=${lat}&lon=${lon}&appid=${solar_API_KEY}`;
 
-  fetch(url)
-  .then(response => response.json())
+function airPollutionBasedOnCoordinates(lat, lon) {
+  fetch(`https://beach-web-proxy.xyz:8443/air-pollution?lat=${lat}&lon=${lon}`)
+  .then(response => {
+    if (!response.ok) {
+      throw new Error('Failed to fetch air pollution data from server');
+    }
+    return response.json();
+  })
   .then(data => {
       console.log(data);
       const aq = document.querySelector("#airQuality");
@@ -230,57 +180,3 @@ function airPollutionBasedOnCoordinates(lat, lon) {
       aq.innerHTML = "Air Qulity: " + airQuality(aqi_value);
     });
 }
-
-
-
-const solar_API_KEY = "ed8b789eecee129309891dfe30f9a4c6"
-
-// current solar radiation by coordinates
-function solarRadiationCurrentJSONCoordinates(lat, lon) {
-    var url = `https://api.openweathermap.org/data/2.5/solar_radiation?lat=${lat}&lon=${lon}&appid=${solar_API_KEY}`;
-
-    fetch(url)
-    .then(response => response.json())
-    .then(data => {
-                    console.log(data);
-                    const solarRadGHI = document.querySelector("#ghi");
-                    // let ghi = data['list'][0]['radiation']['ghi'];
-                    let ghi = data['list'][0]['radiation']['ghi'];
-                    console.log(ghi);
-                    if(ghi < 1000){
-                      solarRadGHI.innerHTML = "Radiation: " + "Great";
-                    } else {
-                      solarRadGHI.innerHTML = "Radiation: " + "Stay Home";
-                    }
-        
-                    // solarRadGHI.innerHTML = "Radiation: " + ghi;
-                    // const solarRadDNI = document.querySelector("dni");
-
-
-
-
-                    // const dataPretty = JSON.stringify(data, null, 2); 
-                    // body.insertAdjacentHTML("beforeend", `<h1> ${dataPretty} <\h1>`);
-                  });
-}
-
-// forecast solar radiation by coordinates
-function solarRadiationForecastJSONCoordinates(lat, lon) {
-    var url = `https://api.openweathermap.org/data/2.5/solar_radiation/forecast?lat=${lat}&lon=${lon}&appid=${API_KEY}`;
-
-    fetch(url)
-    .then(response => response.json())
-    .then(data => {
-                    console.log(data);
-                    const body = document.querySelector("body");
-                    const dataPretty = JSON.stringify(data, null, 2); 
-                    body.insertAdjacentHTML("beforeend", `<h1> ${dataPretty} <\h1>`);
-                  });
-}
-
-// demo
-// solarRadiationCurrentJSONCoordinates(0, 0);
-// solarRadiationForecastJSONCoordinates(0, 0);
-
- 
-
