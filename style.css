@@ -60,6 +60,9 @@ body {
   top:0;
   right:0;
 }
+#details {
+  margin-left: 2rem;
+}
 
 #result-container {
   display: flex; /* Use flexbox */
