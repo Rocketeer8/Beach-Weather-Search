@@ -1,6 +1,6 @@
 function weatherJSONCoordinates(lat, lon) {
     // get weather based on lat and lon given
-    fetch(`https://beach-web-proxy.xyz:8443/weather?lat=${lat}&lon=${lon}`)
+    fetch(`https://danny-proxy-server.best:8443/weather?lat=${lat}&lon=${lon}`)
       .then(response => {
         if (!response.ok) {
           throw new Error('Failed to fetch weather data from server');

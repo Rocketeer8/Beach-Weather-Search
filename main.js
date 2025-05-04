@@ -9,7 +9,7 @@ document.getElementById('submitBtn').addEventListener('click', function() {
   
   // Converting address to latitude and longitude
   function geocode(location) {
-    fetch(`https://beach-web-proxy.xyz:8443/geocode?location=${location}`)
+    fetch(`https://danny-proxy-server.best:8443/geocode?location=${location}`)
       .then(response => {
         if (!response.ok) {
           throw new Error('Failed to fetch data from server');

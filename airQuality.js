@@ -10,7 +10,7 @@ const airQuality = (aqi) => {
   }
   
   function airPollutionBasedOnCoordinates(lat, lon) {
-    fetch(`https://beach-web-proxy.xyz:8443/air-pollution?lat=${lat}&lon=${lon}`)
+    fetch(`https://danny-proxy-server.best:8443/air-pollution?lat=${lat}&lon=${lon}`)
       .then(response => {
         if (!response.ok) {
           throw new Error('Failed to fetch air pollution data from server');
